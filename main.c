@@ -19,11 +19,12 @@
 #define BUTTON_ID2 1             // End Button
 #define BUTTON_IDA 2             // A Button
 #define BUTTON_IDB 3             // B Button
+#define BUTTON_ID  4
 
 #define TITLE _T("TEST")
 
 HWND MainHwnd;
-HWND Button_1, Button_2, Button_A, Button_B; // ボタン用
+HWND Button_1, Button_2, Button_A, Button_B, Button; // ボタン用
 
 RECT recDisplay, recWindow, recClient;
 
@@ -90,6 +91,13 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
 		case BUTTON_IDB:                                                                  // ボタンであった場合
 			OpenUrl(2);
 			DestroyWindow(hwnd);                                                          // システムを停止
+			break;
+		case BUTTON_ID:
+			DestroyWindow(Button_1);
+			DestroyWindow(Button_2);
+			DestroyWindow(Button_A);
+			DestroyWindow(Button_B);
+			DestroyWindow(Button);
 			break;
 		}
 		return 0;
@@ -174,6 +182,20 @@ int createButtons(HWND hwnd, WPARAM wp, LPARAM lp, int width) {
 		50,
 		hwnd,
 		(HMENU)BUTTON_ID2,
+		((LPCREATESTRUCT)(lp))->hInstance,
+		NULL
+	);
+
+	Button = CreateWindow(
+		TEXT("BUTTON"),
+		TEXT("TEST"),
+		WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+		width,
+		480,
+		400,
+		50,
+		hwnd,
+		(HMENU)BUTTON_ID,
 		((LPCREATESTRUCT)(lp))->hInstance,
 		NULL
 	);
