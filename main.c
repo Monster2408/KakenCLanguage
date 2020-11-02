@@ -6,14 +6,16 @@
 #include <shellapi.h>
 #include <shellapi.h>
 #include <objbase.h>
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
 
 #pragma comment(lib, "user32.lib")
 #pragma comment(lib, "ole32.lib")
 #pragma comment(lib, "shell32.lib")
 
 #define _WIN32_WINNT 0x0500
-#define WINDOW_WIDTH    1280     // ã‚½ãƒ•ãƒˆèµ·å‹•å¾Œã«è¡¨ç¤ºã™ã‚‹åˆæœŸã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦æ¨ªã‚µã‚¤ã‚º
-#define WINDOW_HEIGHT   720      // ã‚½ãƒ•ãƒˆèµ·å‹•å¾Œã«è¡¨ç¤ºã™ã‚‹åˆæœŸã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦ç¸¦ã‚µã‚¤ã‚º
+#define WINDOW_WIDTH    1280     // ƒ\ƒtƒg‹N“®Œã‚É•\Ž¦‚·‚é‰ŠúƒEƒCƒ“ƒhƒE‰¡ƒTƒCƒY
+#define WINDOW_HEIGHT   720      // ƒ\ƒtƒg‹N“®Œã‚É•\Ž¦‚·‚é‰ŠúƒEƒCƒ“ƒhƒEcƒTƒCƒY
 
 #define BUTTON_ID1 0             // Start Button
 #define BUTTON_ID2 1             // End Button
@@ -24,23 +26,23 @@
 #define TITLE _T("TEST")
 
 HWND MainHwnd;
-HWND Button_1, Button_2, Button_A, Button_B, Button; // ãƒœã‚¿ãƒ³ç”¨
+HWND Button_1, Button_2, Button_A, Button_B, Button, NewButton; // ƒ{ƒ^ƒ“—p
 
 RECT recDisplay, recWindow, recClient;
 
 BOOLEAN DebugMode = TRUE;
 
-void DoGetActiveWindow(); // DoGetActiveWindow() ã®å®£è¨€
+void DoGetActiveWindow(); // DoGetActiveWindow() ‚ÌéŒ¾
 
-int main() // ãƒ—ãƒ­ã‚°ãƒ©ãƒ å®Ÿè¡Œå¾Œã«å®Ÿè¡Œã•ã‚Œã‚‹é–¢æ•°ï¼Ÿ
+int main() // ƒvƒƒOƒ‰ƒ€ŽÀsŒã‚ÉŽÀs‚³‚ê‚éŠÖ”H
 {
 	if (!DebugMode) 
 	{
-		HWND hWnd = GetConsoleWindow(); // ã‚³ãƒ³ã‚½ãƒ¼ãƒ«ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦å–å¾—
-		ShowWindow(hWnd, SW_MINIMIZE);  // ã‚³ãƒ³ã‚½ãƒ¼ãƒ«ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦æœ€å°åŒ–ï¼Ÿ
-		ShowWindow(hWnd, SW_HIDE);      // ã‚³ãƒ³ã‚½ãƒ¼ãƒ«ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦éš ã™
+		HWND hWnd = GetConsoleWindow(); // ƒRƒ“ƒ\[ƒ‹ƒEƒCƒ“ƒhƒEŽæ“¾
+		ShowWindow(hWnd, SW_MINIMIZE);  // ƒRƒ“ƒ\[ƒ‹ƒEƒCƒ“ƒhƒEÅ¬‰»H
+		ShowWindow(hWnd, SW_HIDE);      // ƒRƒ“ƒ\[ƒ‹ƒEƒCƒ“ƒhƒE‰B‚·
 	}
-	DoGetActiveWindow();            // DoGetActiveWindow() ã®å®Ÿè¡Œ
+	DoGetActiveWindow();            // DoGetActiveWindow() ‚ÌŽÀs
 	return 0;
 }
 
@@ -57,40 +59,40 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
 
 	static HWND hPush;
 
-	switch (msg) {  // æŠ•ã’ã‚‰ã‚ŒãŸãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚’ç™ºè¦‹(?)
+	switch (msg) {  // “Š‚°‚ç‚ê‚½ƒƒbƒZ[ƒW‚ð”­Œ©(?)
 
 	case WM_CREATE:
 		createButtons(hwnd, wp, lp, width);
 		return 0;
 		/*
-			ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦ãŒé–‰ã˜ã‚‰ã‚ŒãŸã‚‰å‹•ä½œçµ‚äº†
+			ƒEƒCƒ“ƒhƒE‚ª•Â‚¶‚ç‚ê‚½‚ç“®ìI—¹
 		*/
-	case WM_DESTROY:                                                                      // ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦ã‚’é–‰ã˜ãŸå ´åˆ
-		PostQuitMessage(0);                                                               // ã‚·ã‚¹ãƒ†ãƒ ã‚’çµ‚ã‚ã‚‰ã™
+	case WM_DESTROY:                                                                      // ƒEƒCƒ“ƒhƒE‚ð•Â‚¶‚½ê‡
+		PostQuitMessage(0);                                                               // ƒVƒXƒeƒ€‚ðI‚í‚ç‚·
 		return 0;
 		/*
-			ã‚³ãƒžãƒ³ãƒ‰
+			ƒRƒ}ƒ“ƒh
 		*/
-	case WM_COMMAND:                                                                      // ã‚³ãƒžãƒ³ãƒ‰ã§ã‚ã£ãŸå ´åˆ
+	case WM_COMMAND:                                                                      // ƒRƒ}ƒ“ƒh‚Å‚ ‚Á‚½ê‡
 		switch (LOWORD(wp)) {
 			/*
-				ç”»é¢ã‚µã‚¤ã‚ºã®å¤‰æ›´ã«å¿œã˜ã¦ãƒœã‚¿ãƒ³ã®ä½ç½®ã‚’å¤‰æ›´ã™ã‚‹
-				å®Œæˆã—ãªã‹ã£ãŸ
+				‰æ–ÊƒTƒCƒY‚Ì•ÏX‚É‰ž‚¶‚Äƒ{ƒ^ƒ“‚ÌˆÊ’u‚ð•ÏX‚·‚é
+				Š®¬‚µ‚È‚©‚Á‚½
 			*/
-		case BUTTON_ID1:                                                // ãƒœã‚¿ãƒ³ï¼‘ã§ã‚ã£ãŸå ´åˆ
+		case BUTTON_ID1:                                                // ƒ{ƒ^ƒ“‚P‚Å‚ ‚Á‚½ê‡
 			OpenUrl(0);
 			DestroyWindow(hwnd);
 			break;
-		case BUTTON_ID2:                                                                  // ãƒœã‚¿ãƒ³ï¼’ã§ã‚ã£ãŸå ´åˆ
-			DestroyWindow(hwnd);                                                          // ã‚·ã‚¹ãƒ†ãƒ ã‚’åœæ­¢
+		case BUTTON_ID2:                                                                  // ƒ{ƒ^ƒ“‚Q‚Å‚ ‚Á‚½ê‡
+			DestroyWindow(hwnd);                                                          // ƒVƒXƒeƒ€‚ð’âŽ~
 			break;
-		case BUTTON_IDA:                                                                  // ãƒœã‚¿ãƒ³Aã§ã‚ã£ãŸå ´åˆ
+		case BUTTON_IDA:                                                                  // ƒ{ƒ^ƒ“A‚Å‚ ‚Á‚½ê‡
 			OpenUrl(1);
-			DestroyWindow(hwnd);                                                          // ã‚·ã‚¹ãƒ†ãƒ ã‚’åœæ­¢
+			DestroyWindow(hwnd);                                                          // ƒVƒXƒeƒ€‚ð’âŽ~
 			break;
-		case BUTTON_IDB:                                                                  // ãƒœã‚¿ãƒ³ã§ã‚ã£ãŸå ´åˆ
+		case BUTTON_IDB:                                                                  // ƒ{ƒ^ƒ“‚Å‚ ‚Á‚½ê‡
 			OpenUrl(2);
-			DestroyWindow(hwnd);                                                          // ã‚·ã‚¹ãƒ†ãƒ ã‚’åœæ­¢
+			DestroyWindow(hwnd);                                                          // ƒVƒXƒeƒ€‚ð’âŽ~
 			break;
 		case BUTTON_ID:
 			DestroyWindow(Button_1);
@@ -98,6 +100,23 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
 			DestroyWindow(Button_A);
 			DestroyWindow(Button_B);
 			DestroyWindow(Button);
+			hdc = GetDC(hwnd);
+			TextOut(hdc, 10, 10, _TEXT("aaa"), 3);
+			NewButton = CreateWindow(
+				TEXT("BUTTON"),
+				TEXT("ƒgƒbƒvƒy[ƒW"),
+				WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+				width,
+				300, // Šî€‚Ì‚‚³(YÀ•W‚Í‘O‚ÌÀ•W‚É+60)
+				400,
+				50,
+				hwnd,
+				(HMENU)BUTTON_ID1,
+				((LPCREATESTRUCT)(lp))->hInstance,
+				NULL
+			);
+			UpdateWindow(NewButton);
+			ShowWindow(NewButton, SW_SHOW);
 			break;
 		}
 		return 0;
@@ -117,7 +136,7 @@ int OpenUrl(int i) {
 		hInst = ShellExecute(NULL, TEXT("open"), TEXT("https://google.com"), NULL, NULL, SW_SHOWNORMAL);
 	}
 
-	if (hInst < (HINSTANCE)32) {    // 32æœªæº€ã¯èµ·å‹•ã«å¤±æ•—
+	if (hInst < (HINSTANCE)32) {    // 32–¢–ž‚Í‹N“®‚ÉŽ¸”s
 		return 0;
 	}
 	return 0;
@@ -132,10 +151,10 @@ int createButtons(HWND hwnd, WPARAM wp, LPARAM lp, int width) {
 	width = (width / 2) - 200;
 	Button_1 = CreateWindow(
 		TEXT("BUTTON"),
-		TEXT("ãƒˆãƒƒãƒ—ãƒšãƒ¼ã‚¸"),
+		TEXT("ƒgƒbƒvƒy[ƒW"),
 		WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
 		width,
-		300, // åŸºæº–ã®é«˜ã•(Yåº§æ¨™ã¯å‰ã®åº§æ¨™ã«+60)
+		300, // Šî€‚Ì‚‚³(YÀ•W‚Í‘O‚ÌÀ•W‚É+60)
 		400,
 		50,
 		hwnd,
@@ -146,10 +165,10 @@ int createButtons(HWND hwnd, WPARAM wp, LPARAM lp, int width) {
 
 	Button_A = CreateWindow(
 		TEXT("BUTTON"),
-		TEXT("ç¬¬äºŒç¨®é›»æ°—å·¥äº‹å£«"),
+		TEXT("‘æ“ñŽí“d‹CHŽ–Žm"),
 		WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
 		width,
-		360, // åŸºæº–ã®é«˜ã•(Yåº§æ¨™ã¯å‰ã®åº§æ¨™ã«+60)
+		360, // Šî€‚Ì‚‚³(YÀ•W‚Í‘O‚ÌÀ•W‚É+60)
 		195,
 		50,
 		hwnd,
@@ -163,7 +182,7 @@ int createButtons(HWND hwnd, WPARAM wp, LPARAM lp, int width) {
 		TEXT("GOOGLE"),
 		WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
 		width + 205,
-		360, // åŸºæº–ã®é«˜ã•(Yåº§æ¨™ã¯å‰ã®åº§æ¨™ã«+60)
+		360, // Šî€‚Ì‚‚³(YÀ•W‚Í‘O‚ÌÀ•W‚É+60)
 		195,
 		50,
 		hwnd,
@@ -202,16 +221,16 @@ int createButtons(HWND hwnd, WPARAM wp, LPARAM lp, int width) {
 	return 0;
 }
 
-/* ã‚¢ã‚¯ãƒ†ã‚£ãƒ–ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚’è¡¨ç¤ºã™ã‚‹ */
+/* ƒAƒNƒeƒBƒuƒEƒBƒ“ƒhƒE‚ð•\Ž¦‚·‚é */
 void DoGetActiveWindow(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nCmdShow) {
 	HWND hWnd, hDeskWnd;
 	WNDCLASS winc;
 	MSG msg;
 
-	hDeskWnd = GetDesktopWindow();                              // PCã®ç”»é¢ã‚µã‚¤ã‚ºå–å¾—
-	GetWindowRect(hDeskWnd, &recDisplay);                       // ç”»é¢ã«é–¢ã™ã‚‹ãƒ‡ãƒ¼ã‚¿å–å¾—
+	hDeskWnd = GetDesktopWindow();                              // PC‚Ì‰æ–ÊƒTƒCƒYŽæ“¾
+	GetWindowRect(hDeskWnd, &recDisplay);                       // ‰æ–Ê‚ÉŠÖ‚·‚éƒf[ƒ^Žæ“¾
 
-	winc.style = CS_HREDRAW | CS_VREDRAW;                       // ã„ã‚ã„ã‚...
+	winc.style = CS_HREDRAW | CS_VREDRAW;                       // ‚¢‚ë‚¢‚ë...
 	winc.lpfnWndProc = WindowProc;
 	winc.cbClsExtra = winc.cbWndExtra = 0;
 	winc.hInstance = hInstance;
@@ -223,37 +242,37 @@ void DoGetActiveWindow(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdL
 
 	DWORD dwStyle = (WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX);
 
-	if (!RegisterClass(&winc)) return 0;                        // ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦ãŒè¡¨ç¤ºã§ããªã‹ã£ãŸã‚‰çµ‚äº†
+	if (!RegisterClass(&winc)) return 0;                        // ƒEƒCƒ“ƒhƒE‚ª•\Ž¦‚Å‚«‚È‚©‚Á‚½‚çI—¹
 
-	/* ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦ã®è©³ç´°è¨­å®š */
+	/* ƒEƒCƒ“ƒhƒE‚ÌÚ×Ý’è */
 	MainHwnd = CreateWindow(
 		TEXT("MainWindow"),
-		TEXT("æ¤œå®šå¯¾ç­–ã‚½ãƒ•ãƒˆ"),
+		TEXT("ŒŸ’è‘Îôƒ\ƒtƒg"),
 		WS_OVERLAPPED | WS_SYSMENU,
-		(recDisplay.right - WINDOW_WIDTH) / 2,                 //å·¦ä¸Šxåº§æ¨™
-		(recDisplay.bottom - WINDOW_HEIGHT) / 2,               //å·¦ä¸Šyåº§æ¨™
-		WINDOW_WIDTH, //å¹…
-		WINDOW_HEIGHT, //é«˜ã•
+		(recDisplay.right - WINDOW_WIDTH) / 2,                 //¶ãxÀ•W
+		(recDisplay.bottom - WINDOW_HEIGHT) / 2,               //¶ãyÀ•W
+		WINDOW_WIDTH, //•
+		WINDOW_HEIGHT, //‚‚³
 		NULL, NULL,
 		hInstance, NULL
 	);
 
-	/* æ–‡å­—ã‚’è¨­å®š */
+	/* •¶Žš‚ðÝ’è */
 	HDC hdc;
 	RECT rect;
 	hdc = GetDC(MainHwnd);
-	LPTSTR lptStr = _T("æ¤œå®šå¯¾ç­–ç”¨ã‚½ãƒ•ãƒˆ");
+	LPTSTR lptStr = _T("ŒŸ’è‘Îô—pƒ\ƒtƒg");
 	TextOut(hdc, 10, 10, lptStr, lstrlen(lptStr));
 	ReleaseDC(MainHwnd, hdc);
 
-	/* ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦ã‚’æœ€å‰é¢ã« */
+	/* ƒEƒCƒ“ƒhƒE‚ðÅ‘O–Ê‚É */
 	SetWindowPos(
 		MainHwnd,
 		HWND_TOPMOST,
-		(recDisplay.right - WINDOW_WIDTH) / 2, //å·¦ä¸Šxåº§æ¨™
-		(recDisplay.bottom - WINDOW_HEIGHT) / 2, //å·¦ä¸Šyåº§æ¨™
-		WINDOW_WIDTH, //å¹…
-		WINDOW_HEIGHT, //é«˜ã•
+		(recDisplay.right - WINDOW_WIDTH) / 2, //¶ãxÀ•W
+		(recDisplay.bottom - WINDOW_HEIGHT) / 2, //¶ãyÀ•W
+		WINDOW_WIDTH, //•
+		WINDOW_HEIGHT, //‚‚³
 		NULL
 	);
 
